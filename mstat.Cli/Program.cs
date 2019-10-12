@@ -1,5 +1,4 @@
-﻿using System.Windows.Forms;
-using mstat.Core;
+﻿using mstat.Core;
 using Console = System.Console;
 
 namespace mstat.Cli
@@ -19,7 +18,7 @@ namespace mstat.Cli
                 Console.WriteLine($"{window} {click} @ ({arg.X},{arg.Y})");
             };
 
-            Application.Run();
+            EventLoop.Run();
         }
     }
 }
