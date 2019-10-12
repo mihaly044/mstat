@@ -46,32 +46,32 @@ namespace mstat.Core
         /// <summary>
         ///     Delegate object for <see cref="WinEventProc"/>
         /// </summary>
-        private static Imports.WinEventProcEx _eventProcDelegate;
+        private static readonly Imports.WinEventProcEx EventProcDelegate;
 
         /// <summary>
         ///     Function pointer to <see cref="WinEventProc"/> for unmanaged code
         /// </summary>
-        private static IntPtr _cbForegroundPtr;
+        private static readonly IntPtr CbForegroundPtr;
 
         /// <summary>
         ///     The hook handle that the OS assigns when calling SetWinEventHook.
         /// </summary>
-        private static User32.SafeEventHookHandle _foregroundWindowHook;
+        private static readonly User32.SafeEventHookHandle ForegroundWindowHook;
 
         /// <summary>
         ///     The hook handle that the OS assigns when calling SetWindowsHookEx.
         /// </summary>
-        private static User32.SafeHookHandle _mouseHook;
+        private static readonly User32.SafeHookHandle MouseHook;
 
         /// <summary>
         ///     Delegate object for <see cref="MouseHookProc"/>
         /// </summary>
-        private static User32.WindowsHookDelegate _mouseHookDelegate;
+        private static readonly User32.WindowsHookDelegate MouseHookDelegate;
 
         /// <summary>
         ///     Function pointer to <see cref="MouseHookProc"/> for unmanaged code
         /// </summary>
-        private static IntPtr _cbMouseLlPtr;
+        private static readonly IntPtr CbMouseLlPtr;
         // ReSharper restore PrivateFieldCanBeConvertedToLocalVariable
 
         /// <summary>
@@ -82,15 +82,15 @@ namespace mstat.Core
             AppDomain.CurrentDomain.ProcessExit += CurrentDomainOnProcessExit;
 
             // Set up hooks
-            _eventProcDelegate = WinEventProc;
-            _cbForegroundPtr = Marshal.GetFunctionPointerForDelegate(_eventProcDelegate);
-            _foregroundWindowHook = User32.SetWinEventHook(User32.WindowsEventHookType.EVENT_SYSTEM_FOREGROUND,
-                User32.WindowsEventHookType.EVENT_SYSTEM_FOREGROUND, IntPtr.Zero, _cbForegroundPtr, 0, 0,
+            EventProcDelegate = WinEventProc;
+            CbForegroundPtr = Marshal.GetFunctionPointerForDelegate(EventProcDelegate);
+            ForegroundWindowHook = User32.SetWinEventHook(User32.WindowsEventHookType.EVENT_SYSTEM_FOREGROUND,
+                User32.WindowsEventHookType.EVENT_SYSTEM_FOREGROUND, IntPtr.Zero, CbForegroundPtr, 0, 0,
                 User32.WindowsEventHookFlags.WINEVENT_OUTOFCONTEXT);
 
-            _mouseHookDelegate = MouseHookProc;
-            _cbMouseLlPtr = Marshal.GetFunctionPointerForDelegate(_mouseHookDelegate);
-            _mouseHook = User32.SetWindowsHookEx(User32.WindowsHookType.WH_MOUSE_LL, _cbMouseLlPtr,
+            MouseHookDelegate = MouseHookProc;
+            CbMouseLlPtr = Marshal.GetFunctionPointerForDelegate(MouseHookDelegate);
+            MouseHook = User32.SetWindowsHookEx(User32.WindowsHookType.WH_MOUSE_LL, CbMouseLlPtr,
                 Kernel32.GetModuleHandle(null).DangerousGetHandle(), 0);
 
             // Run standard event loop
@@ -158,7 +158,7 @@ namespace mstat.Core
                 }
             }
 
-            return User32.CallNextHookEx(_mouseHook.DangerousGetHandle(), nCode, wParam, lParam);
+            return User32.CallNextHookEx(MouseHook.DangerousGetHandle(), nCode, wParam, lParam);
         }
 
         /// <summary>
@@ -168,8 +168,8 @@ namespace mstat.Core
         /// <param name="e"></param>
         private static void CurrentDomainOnProcessExit(object sender, EventArgs e)
         {
-            Imports.UnhookWindowsHookEx(_mouseHook.DangerousGetHandle());
-            Imports.UnhookWinEvent(_foregroundWindowHook.DangerousGetHandle());
+            Imports.UnhookWindowsHookEx(MouseHook.DangerousGetHandle());
+            Imports.UnhookWinEvent(ForegroundWindowHook.DangerousGetHandle());
         }
     }
 }
