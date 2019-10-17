@@ -12,9 +12,9 @@ namespace mstat.Core
         /// </summary>
         private static IntPtr GetClassLongPtr(IntPtr hWnd, int nIndex)
         {
-            if (IntPtr.Size == 4)
-                return new IntPtr(Imports.GetClassLong32(hWnd, nIndex));
-            return Imports.GetClassLong64(hWnd, nIndex);
+            return IntPtr.Size == 4
+                ? new IntPtr(Imports.GetClassLong32(hWnd, nIndex))
+                : Imports.GetClassLong64(hWnd, nIndex);
         }
 
         /// <summary>
